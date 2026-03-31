@@ -1,0 +1,4 @@
+{"id": "doc1", "structData": {"category": "retail_loan"}, "content": {"mimeType": "text/plain", "uri": "gs://nh-bestbanker-poc-bucket-jjw/retail_loans.txt"}}
+{"id": "doc2", "structData": {"category": "corporate_loan"}, "content": {"mimeType": "text/plain", "uri": "gs://nh-bestbanker-poc-bucket-jjw/corporate_loans.txt"}}
+{"id": "doc3", "structData": {"category": "deposit"}, "content": {"mimeType": "text/plain", "uri": "gs://nh-bestbanker-poc-bucket-jjw/deposits.txt"}}
+{"id": "doc4", "structData": {"category": "digital_banking"}, "content": {"mimeType": "text/plain", "uri": "gs://nh-bestbanker-poc-bucket-jjw/digital_banking.txt"}}
