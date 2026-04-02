@@ -3,6 +3,12 @@
 ## 문서 전처리 
 ![임베딩](./images/preprocessing.jpeg)
 
+- **형식 변환 (PDF → MD)**: 상용 모델인 Gemini 3.1 Pro를 활용하여 원본 PDF 문서를 Markdown 형식으로 변환
+- **태그 정제**: 변환된 MD 파일 내에 남아있는 HTML 잔재(색상 변환, `<br>` 태그 등)를 일괄 제거하여 텍스트 정제
+- **취소선 처리**: 기존 문서 내 취소선으로 표시된 부분은 명시적으로 '취소됨'으로 텍스트화하여 의미 정보 유지
+- **최종 포맷 변환 (MD → TXT)**: Vertex AI 지원 형식인 `.txt` 포맷으로 최종 전환 수행
+- **분할 및 적재**: 정제된 전체 텍스트를 각 파트별로 잘라 4개의 파일로 분할한 뒤, Vertex AI Data Store에 적재
+
 ## Google ADK(Agent Development Kit)는
 
 - LLM 에이전트를 빠르게 구축하기 위한 Google의 공식 프레임워크
