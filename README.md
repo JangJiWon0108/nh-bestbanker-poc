@@ -1,7 +1,7 @@
 # PoC (ADK 팀) 진행 내용 및 결과 정리
 
 ## 문서 전처리 
-
+![임베딩](./images/preprocessing.jpeg)
 
 ## Google ADK(Agent Development Kit)는
 
