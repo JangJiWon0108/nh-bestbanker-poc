@@ -8,6 +8,7 @@
 - 질답 평가
 ---
 ## 문서 전처리 
+![전처리](./images/preprocessing.jpeg)
 - **형식 변환 (PDF → MD)**: 상용 모델인 Gemini 3.1 Pro를 활용하여 원본 PDF 문서를 Markdown 형식으로 변환
 - **태그 정제**: 변환된 MD 파일 내에 남아있는 HTML 잔재(색상 변환, `<br>` 태그 등)를 일괄 제거하여 텍스트 정제
 - **취소선 처리**: 기존 문서 내 취소선으로 표시된 부분은 명시적으로 '취소됨'으로 텍스트화하여 의미 정보 유지
@@ -22,7 +23,7 @@
   - 이는 빠른 프로토타입에 유리하지만, LangGraph처럼 세밀한 흐름 제어는 제한적임
   - ADK 2.0 에서는 그래프 기반 워크플로가 가능해짐 (라우팅 가능)
 
-```
+```python
 from google_adk import agent
 
 # tool 정의
@@ -61,15 +62,6 @@ weather_bot = agent.LlmAgent(
   - 문서 처리: 비정형 데이터(PDF, HTML, TXT)나 정형 데이터(JSON, CSV)를 수집하여 텍스트를 추출하고 분할(Chunking)함
   - 임베딩(Embedding): 텍스트 데이터를 고차원 벡터로 변환하여 벡터 데이터베이스 형태로 인덱싱
 
-### 앱 / 엔진 (App / Engine)
-
-- 데이터 스토어에 씌워지는 검색 엔진
-- 하나의 앱(엔진) 에 여러 개의 데이터 스토어를 연결할 수 있음
-- App 의 종류
-  - Search (검색): 가장 일반적인 형태. 문서나 사이트에서 정보를 찾는데 사용
-  - Recommendation (추천): 사용자의 패턴을 학습해 콘텐츠나 상품을 추천
-  - Healthcare Search: 의료 데이터(FHIR 등)에 특화된 검색 엔진
-
 ### 파서 (Parsing)
 - `Digital Parser`(기본/무료) : 일반 텍스트 추출 중심
 - `Layout Parser`(유료) : 문서 구조/계층(제목, 목록, 표, 머리글/각주 등) 인식 (txt파일 지원하지 않음)
@@ -87,6 +79,16 @@ weather_bot = agent.LlmAgent(
   - 형식: 1차원 배열, 차원수 `1~768`
   - 임베딩 키 속성(필드) 최대 2개 태그 가능, **설정 후 삭제 불가**
 
+  ### 앱 / 엔진 (App / Engine)
+
+- 데이터 스토어에 씌워지는 검색 엔진
+- 하나의 앱(엔진) 에 여러 개의 데이터 스토어를 연결할 수 있음
+- App 의 종류
+  - Search (검색): 가장 일반적인 형태. 문서나 사이트에서 정보를 찾는데 사용
+  - Recommendation (추천): 사용자의 패턴을 학습해 콘텐츠나 상품을 추천
+  - Healthcare Search: 의료 데이터(FHIR 등)에 특화된 검색 엔진
+
+
 <img src="./images/embedding.jpeg" width="700" height="300">
 <!-- ![임베딩](./images/embedding.jpeg) -->
 
@@ -96,6 +98,7 @@ weather_bot = agent.LlmAgent(
 
 ### Serving Controls (서빙 컨트롤)
 - 기본 AI 모델 판단에만 맡기지 않고, **특정 조건(Condition)** 에 따라 **동작(Action)** 을 강제해 검색 결과를 가공/제어하는 기능
+
 - 대표 유형
   - `Boost`: 조건에 맞는 결과를 상단/하단으로 **순위 조정**
   - `Filter`: 조건에 안 맞는 결과를 **결과에서 제외**
