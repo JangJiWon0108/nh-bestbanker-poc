@@ -1,0 +1,14 @@
+# Agent Engine 원격 이미지용 의존성 (프로젝트 pyproject.toml 과 정합)
+# 저장소 루트에서: uv run python agent_engine_deploy.py
+google-cloud-aiplatform[agent_engines,adk]>=1.112
+google-adk>=1.27.0
+google-auth>=2.48.0
+google-genai>=1.66.0
+google-cloud-aiplatform>=1.38.0
+google-cloud-discoveryengine>=0.13.12
+google-cloud-storage>=3.9.0
+pydantic>=2.12.5
+pydantic-settings>=2.13.1
+pandas>=3.0.1
+colorama>=0.4.6
+requests>=2.32.0

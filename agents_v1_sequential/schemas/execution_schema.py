@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 ExecutionStatus = Literal[
     "executed",
-    "skipped_not_required",
+    "calculation_not_needed",
     "skipped_out_of_scope",
     "failed",
 ]
@@ -14,7 +14,7 @@ ExecutionStatus = Literal[
 class CodeExecutionOutput(BaseModel):
     execution_status: ExecutionStatus = Field(
         description=(
-            "코드 실행 결과 상태. 계산 필요가 없으면 skipped_*, "
+            "코드 실행 결과 상태. 계산이 필요하지 않으면 calculation_not_needed, "
             "실행/완료면 executed, 실패면 failed."
         )
     )

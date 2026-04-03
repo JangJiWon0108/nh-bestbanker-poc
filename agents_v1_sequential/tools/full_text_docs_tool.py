@@ -1,6 +1,10 @@
 from pathlib import Path
 from typing import Any
 
+from google.adk.tools.tool_context import ToolContext
+
+from agents_v1_sequential.tools.retrieval_state_helper import commit_retrieval_context_to_state
+
 
 OUT_OF_SCOPE_CATEGORY = "out_of_scope"
 ALLOWED_CATEGORIES = {
@@ -22,29 +26,31 @@ V2_DOCS_DIR = BASE_DIR / "file" / "agent_knowledge_base_v3"
 def retrieve_full_text_docs_by_categories(
     search_query: str,
     categories: list[str],
+    tool_context: ToolContext,
     top_k: int = 5,
 ) -> dict[str, Any]:
     """카테고리에 해당하는 v2 원문 txt를 통째로 읽어 반환한다."""
-    del search_query  # 시그니처 호환 목적(현재 구현에서는 사용하지 않음)
-
     normalized_categories = [category.strip() for category in categories if category.strip()]
     normalized_categories = [
         category for category in normalized_categories if category != OUT_OF_SCOPE_CATEGORY
     ]
 
-    invalid_categories = [
-        category for category in normalized_categories if category not in ALLOWED_CATEGORIES
+    # LLM이 가끔 ALLOWED_CATEGORIES 외 라벨을 만들 수 있어,
+    # 도구 레벨에서 유효한 카테고리만 남기고 나머지는 무시한다.
+    normalized_categories = [
+        category for category in normalized_categories if category in ALLOWED_CATEGORIES
     ]
-    if invalid_categories:
-        raise ValueError(f"유효하지 않은 카테고리입니다: {invalid_categories}")
 
     if not normalized_categories:
-        return {
-            "results": [],
-            "total_size": 0,
-            "search_scope": "full_text_v2_local",
-            "message": "검색 가능한 카테고리가 없어 문서 읽기를 생략했습니다.",
+        empty: dict[str, Any] = {
+            "query": search_query,
+            "categories": [],
+            "retrieval_results": [],
+            "retrieval_total_size": 0,
+            "retrieval_type": "full_text",
         }
+        commit_retrieval_context_to_state(tool_context, empty)
+        return empty
 
     results: list[dict[str, Any]] = []
     for category in normalized_categories:
@@ -65,8 +71,12 @@ def retrieve_full_text_docs_by_categories(
             }
         )
 
-    return {
-        "results": results[:top_k],
-        "total_size": min(len(results), top_k),
-        "search_scope": "full_text_v2_local",
+    payload: dict[str, Any] = {
+        "query": search_query,
+        "categories": normalized_categories,
+        "retrieval_results": results[:top_k],
+        "retrieval_total_size": min(len(results), top_k),
+        "retrieval_type": "full_text",
     }
+    commit_retrieval_context_to_state(tool_context, payload)
+    return payload

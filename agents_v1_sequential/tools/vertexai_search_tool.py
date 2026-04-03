@@ -1,5 +1,8 @@
 from typing import Any
 
+from google.adk.tools.tool_context import ToolContext
+
+from agents_v1_sequential.tools.retrieval_state_helper import commit_retrieval_context_to_state
 from config.properties import Settings
 from store.vertexai_search.retrieve import retrieve_vertexai_search
 
@@ -18,6 +21,7 @@ ALLOWED_CATEGORIES = {
 def retrieve_docs_by_categories(
     search_query: str,
     categories: list[str],
+    tool_context: ToolContext,
 ) -> dict[str, Any]:
     """카테고리 필터를 적용해 Vertex AI Search 결과를 반환한다."""
     normalized_categories = [category.strip() for category in categories if category.strip()]
@@ -25,17 +29,19 @@ def retrieve_docs_by_categories(
     normalized_categories = [
         category for category in normalized_categories if category != OUT_OF_SCOPE_CATEGORY
     ]
-    invalid_categories = [
-        category for category in normalized_categories if category not in ALLOWED_CATEGORIES
+    # LLM이 가끔 ALLOWED_CATEGORIES 외 라벨을 만들 수 있으므로,
+    # 도구 레벨에서 유효하지 않은 카테고리는 제거하고 나머지만 사용한다.
+    normalized_categories = [
+        category for category in normalized_categories if category in ALLOWED_CATEGORIES
     ]
-    if invalid_categories:
-        raise ValueError(f"유효하지 않은 카테고리입니다: {invalid_categories}")
 
     if not normalized_categories:
         return {
-            "results": [],
-            "total_size": 0,
-            "message": "검색 가능한 카테고리가 없어 검색을 생략했습니다.",
+            "query": search_query,
+            "categories": [],
+            "retrieval_results": [],
+            "retrieval_total_size": 0,
+            "retrieval_type": "chunk",
         }
 
     raw_response = retrieve_vertexai_search(
@@ -44,14 +50,13 @@ def retrieve_docs_by_categories(
         engine_id=settings.ENGINE_ID,
         search_query=search_query,
         categories=normalized_categories,
-        user_pseudo_id="formula_modeling_agent",
+        user_pseudo_id="retrieval_agent",
         num_previous_chunks=0,
         num_next_chunks=0,
     )
 
     corrected_query = raw_response.get("correctedQuery")
     raw_results = raw_response.get("results", [])
-    search_scope = "category_filtered"
     simplified_results: list[dict[str, Any]] = []
     for item in raw_results:
         chunk = item.get("chunk", {})
@@ -88,10 +93,13 @@ def retrieve_docs_by_categories(
         )
 
     response: dict[str, Any] = {
-        "results": simplified_results,
-        "total_size": len(simplified_results),
-        "search_scope": search_scope,
+        "query": search_query,
+        "categories": normalized_categories,
+        "retrieval_results": simplified_results,
+        "retrieval_total_size": len(simplified_results),
+        "retrieval_type": "chunk",
     }
     if isinstance(corrected_query, str) and corrected_query.strip():
         response["corrected_query"] = corrected_query.strip()
+    commit_retrieval_context_to_state(tool_context, response)
     return response

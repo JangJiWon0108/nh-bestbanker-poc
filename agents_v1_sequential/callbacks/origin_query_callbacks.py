@@ -1,8 +1,12 @@
 """사용자 원문 질문을 state['original_user_query']에 저장하는 전용 콜백."""
 
 from typing import Any, Optional
+import time
 
 from google.genai import types
+
+
+REQUEST_START_TS_KEY = "request_start_ts"
 
 
 def _content_to_text(content: Any) -> str:
@@ -71,6 +75,11 @@ def _ensure_original_user_query(ctx: Any) -> None:
 
 def origin_query_save_callback(callback_context: Any) -> Optional[types.Content]:
     """가장 앞단에서 사용자 질문을 state['original_user_query']에 보존하는 before_agent 콜백."""
+    state = getattr(callback_context, "state", None)
+    if state is not None and hasattr(state, "get") and hasattr(state, "__setitem__"):
+        # 사용자 입력 시점 -> 최종 응답까지 지연시간 측정용 타임스탬프를 한 번만 저장한다.
+        if not state.get(REQUEST_START_TS_KEY):
+            state[REQUEST_START_TS_KEY] = time.perf_counter()
     _ensure_original_user_query(callback_context)
     return None
 

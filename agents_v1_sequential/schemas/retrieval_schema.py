@@ -1,6 +1,8 @@
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
+
+RetrievalType = Literal["full_text", "chunk"]
 
 
 class RetrievalOutput(BaseModel):
@@ -14,10 +16,10 @@ class RetrievalOutput(BaseModel):
         default=0,
         description="검색 결과 건수",
     )
-    search_scope: str = Field(
-        default="category_filtered",
+    retrieval_type: RetrievalType | None = Field(
+        default=None,
         description=(
-            "검색 범위(category_filtered, fallback_unfiltered, "
-            "out_of_scope_skip, skipped_for_full_text_modeling)"
+            "full_text: 카테고리별 로컬 원문 전체(full text 도구), "
+            "chunk: Vertex AI Search 청크 검색. 검색을 하지 않은 경우 null."
         ),
     )

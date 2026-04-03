@@ -13,7 +13,6 @@ from agents_v1_sequential.sub_agents.conversation_rewrite_agent import (
 from agents_v1_sequential.sub_agents.category_classifier_agent import category_classifier_agent
 from agents_v1_sequential.sub_agents.code_execution_agent import code_execution_agent
 from agents_v1_sequential.sub_agents.final_response_agent import final_response_agent
-from agents_v1_sequential.sub_agents.formula_modeling_agent import formula_modeling_agent
 from agents_v1_sequential.callbacks.logging_callbacks import (
     log_after_agent,
     log_before_agent,
@@ -56,10 +55,6 @@ sub_agents: list = [
     calculation_requirement_agent,
     retrieval_agent,
 ]
-
-# 설정에 따라 formula_modeling_agent 사용 여부를 on/off
-if settings.USE_V1_FORMULA_MODELING_AGENT:
-    sub_agents.append(formula_modeling_agent)
 
 sub_agents.extend(
     [

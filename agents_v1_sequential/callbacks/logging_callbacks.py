@@ -1,6 +1,7 @@
 """ADK agent/model/tool 전체 플로우 로깅을 위한 공통 콜백."""
 
 import json
+import time
 from typing import Any, Optional
 
 from google.genai import types
@@ -132,6 +133,7 @@ def _state_to_str(state_dict: dict, chunk_content_len: int = 50, max_len: int = 
         return obj
 
     prepped = _truncate_chunks(state_dict)
+
     try:
         s = json.dumps(prepped, ensure_ascii=False, default=str, indent=2)
         return s[:max_len] + "\n... (truncated)" if len(s) > max_len else s
@@ -166,6 +168,44 @@ def log_after_agent(callback_context: Any) -> Optional[types.Content]:
     return None
 
 
+def chain_after_model(logging_cb: Any, extra_cb: Any) -> Any:
+    """로깅 후 extra_cb가 LlmResponse를 반환하면 모델 출력을 덮어쓴다."""
+
+    def chained(callback_context: Any, llm_response: Any) -> Any:
+        logging_cb(callback_context, llm_response)
+        return extra_cb(callback_context, llm_response)
+
+    return chained
+
+
+def retrieval_replace_model_output_with_retrieval_json(
+    callback_context: Any, llm_response: Any
+) -> Any:
+    """retrieval_agent: 도구로 채운 retrieval_context를 로그와 동일 규칙의 JSON 문자열로 바꿔, 청크/풀텍스트 모두 통일한다."""
+    if getattr(callback_context, "agent_name", "") != "retrieval_agent":
+        return None
+    if getattr(llm_response, "partial", False) is True:
+        return None
+    content = getattr(llm_response, "content", None)
+    if content is None:
+        return None
+    parts = getattr(content, "parts", None) or []
+    if not parts:
+        return None
+    for p in parts:
+        if getattr(p, "function_call", None) or getattr(p, "function_response", None):
+            return None
+    if not any(getattr(p, "text", None) for p in parts):
+        return None
+    state_dict = _state(callback_context)
+    rc = state_dict.get("retrieval_context")
+    if not isinstance(rc, dict):
+        return None
+    text = _state_to_str({"retrieval_context": rc})
+    new_content = types.Content(parts=[types.Part(text=text)])
+    return llm_response.model_copy(update={"content": new_content})
+
+
 def log_before_model(callback_context: Any, llm_request: Any) -> Optional[Any]:
     agent_name = getattr(callback_context, "agent_name", "unknown")
     model_name = _model_name(llm_request)
@@ -196,6 +236,13 @@ def log_after_model(callback_context: Any, llm_response: Any) -> Optional[Any]:
     model_name = _model_name(llm_response)
     invocation_id = getattr(callback_context, "invocation_id", None)
     state_dict = _state(callback_context)
+    if agent_name == "final_response_agent":
+        state = getattr(callback_context, "state", None)
+        if state is not None and hasattr(state, "get"):
+            start_ts = state.get("request_start_ts")
+            if isinstance(start_ts, (int, float)):
+                elapsed = time.perf_counter() - start_ts
+                logger.info("[JANGJIWON-TIME] user_to_final_response=%.3f초", elapsed)
     if settings.LOGGING_DETAILS:
         logger.info(
             "[CALLBACK] AFTER_MODEL | agent=%s | model=%s | invocation_id=%s | state=%s | output=%s",
