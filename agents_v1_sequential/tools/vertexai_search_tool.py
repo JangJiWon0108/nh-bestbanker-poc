@@ -55,7 +55,6 @@ def retrieve_docs_by_categories(
         num_next_chunks=0,
     )
 
-    corrected_query = raw_response.get("correctedQuery")
     raw_results = raw_response.get("results", [])
     simplified_results: list[dict[str, Any]] = []
     for item in raw_results:
@@ -99,7 +98,5 @@ def retrieve_docs_by_categories(
         "retrieval_total_size": len(simplified_results),
         "retrieval_type": "chunk",
     }
-    if isinstance(corrected_query, str) and corrected_query.strip():
-        response["corrected_query"] = corrected_query.strip()
     commit_retrieval_context_to_state(tool_context, response)
     return response

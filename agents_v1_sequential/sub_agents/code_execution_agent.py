@@ -3,13 +3,6 @@ from google.adk.code_executors import BuiltInCodeExecutor
 from google.genai import types
 
 from agents_v1_sequential.callbacks.early_exit_callbacks import skip_code_execution_if_not_needed
-from agents_v1_sequential.callbacks.logging_callbacks import (
-    chain_before_agent,
-    log_after_agent,
-    log_after_model,
-    log_before_agent,
-    log_before_model,
-)
 from config.properties import Settings
 
 
@@ -67,8 +60,5 @@ code_execution_agent = LlmAgent(
     - executed_code
 """,
     output_key="code_execution",
-    before_agent_callback=chain_before_agent(log_before_agent, skip_code_execution_if_not_needed),
-    after_agent_callback=log_after_agent,
-    before_model_callback=log_before_model,
-    after_model_callback=log_after_model,
+    before_agent_callback=skip_code_execution_if_not_needed,
 )

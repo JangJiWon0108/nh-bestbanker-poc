@@ -1,12 +1,6 @@
 from google.adk.agents.llm_agent import LlmAgent
 from google.genai import types
 
-from agents_v1_sequential.callbacks.logging_callbacks import (
-    log_after_agent,
-    log_after_model,
-    log_before_agent,
-    log_before_model,
-)
 from agents_v1_sequential.schemas.calculation_schema import CalculationRequirementOutput
 from config.properties import Settings
 
@@ -38,8 +32,4 @@ calculation_requirement_agent = LlmAgent(
     output_schema=CalculationRequirementOutput,
     output_key="calculation_requirement",
     tools=[],
-    before_agent_callback=log_before_agent,
-    after_agent_callback=log_after_agent,
-    before_model_callback=log_before_model,
-    after_model_callback=log_after_model,
 )

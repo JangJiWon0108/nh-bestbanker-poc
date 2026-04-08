@@ -83,3 +83,16 @@ def origin_query_save_callback(callback_context: Any) -> Optional[types.Content]
     _ensure_original_user_query(callback_context)
     return None
 
+
+def chain_before_agent(first_cb: Any, second_cb: Any) -> Any:
+    """first_cb는 부수효과용(반환값 무시). second_cb의 반환을 그대로 돌려준다."""
+
+    def chained(callback_context: Any) -> Optional[types.Content]:
+        if first_cb:
+            first_cb(callback_context)
+        if second_cb:
+            return second_cb(callback_context)
+        return None
+
+    return chained
+

@@ -1,22 +1,9 @@
-from typing import Any
-
 from google.adk.agents.llm_agent import LlmAgent
 from google.genai import types
 
-from agents_v1_sequential.callbacks.corrected_query_callbacks import (
-    save_corrected_query_after_tool,
-)
 from agents_v1_sequential.callbacks.early_exit_callbacks import skip_retrieval_if_out_of_scope
-from agents_v1_sequential.callbacks.logging_callbacks import (
-    chain_after_model,
-    chain_before_agent,
-    log_after_agent,
-    log_after_model,
-    log_after_tool,
+from agents_v1_sequential.callbacks.retrieval_model_callbacks import (
     retrieval_replace_model_output_with_retrieval_json,
-    log_before_agent,
-    log_before_model,
-    log_before_tool,
 )
 from agents_v1_sequential.tools.full_text_docs_tool import retrieve_full_text_docs_by_categories
 from agents_v1_sequential.tools.vertexai_search_tool import retrieve_docs_by_categories
@@ -24,20 +11,6 @@ from config.properties import Settings
 
 
 settings = Settings()
-
-
-def chain_after_tool(save_cb: Any, logging_cb: Any) -> Any:
-    def chained(
-        tool: Any,
-        args: dict[str, Any],
-        tool_context: Any,
-        tool_response: dict[str, Any],
-    ) -> dict[str, Any] | None:
-        save_cb(tool, args, tool_context, tool_response)
-        return logging_cb(tool, args, tool_context, tool_response)
-
-    return chained
-
 
 retrieval_instruction = """
 당신은 문서 검색 에이전트다. 검색 결과는 도구가 session state에 기록한다.
@@ -76,14 +49,7 @@ retrieval_agent = LlmAgent(
     ),
     description=retrieval_description,
     instruction=retrieval_instruction,
-    before_agent_callback=chain_before_agent(log_before_agent, skip_retrieval_if_out_of_scope),
-    after_agent_callback=log_after_agent,
-    before_model_callback=log_before_model,
-    after_model_callback=chain_after_model(
-        log_after_model,
-        retrieval_replace_model_output_with_retrieval_json,
-    ),
-    before_tool_callback=log_before_tool,
-    after_tool_callback=chain_after_tool(save_corrected_query_after_tool, log_after_tool),
+    before_agent_callback=skip_retrieval_if_out_of_scope,
+    after_model_callback=retrieval_replace_model_output_with_retrieval_json,
     tools=retrieval_tools,
 )

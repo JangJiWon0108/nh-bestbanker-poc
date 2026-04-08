@@ -1,13 +1,20 @@
-# PoC (ADK 팀) 진행 내용 및 결과 정리
+# NH 베스트뱅커 Agent PoC 진행 결과 (ADK 팀)
 
-## 목차
+## ✅ 목차
+- 질답 평가 점수
 - 문서 전처리
 - Google ADK(Agent Development Kit)
 - VertexAI Search
 - Agent 아키텍쳐
-- 질답 평가
+- 시연
 ---
-## 문서 전처리 
+## 1️⃣ 질답 평가 점수
+https://tripodoffice-my.sharepoint.com/:x:/r/personal/whjeong_didim365_com/Documents/NH_POC_%E1%84%8C%E1%85%B5%E1%86%AF%E1%84%83%E1%85%A1%E1%86%B8_%E1%84%85%E1%85%B5%E1%84%89%E1%85%B3%E1%84%90%E1%85%B3_%E1%84%8E%E1%85%B1%E1%84%92%E1%85%A1%E1%86%B8_ADK.xlsx?d=w32dbde53889e47e89d0f159f034c1dd8&csf=1&web=1&e=S1pdIl
+
+![아키텍쳐](./images/score.jpeg)
+
+---
+## 2️⃣ 문서 전처리 
 ![전처리](./images/preprocessing.jpeg)
 - **형식 변환 (PDF → MD)**: 상용 모델인 Gemini 3.1 Pro를 활용하여 원본 PDF 문서를 Markdown 형식으로 변환
 - **태그 정제**: 변환된 MD 파일 내에 남아있는 HTML 잔재(색상 변환, `<br>` 태그 등)를 일괄 제거하여 텍스트 정제
@@ -15,13 +22,12 @@
 - **최종 포맷 변환 (MD → TXT)**: Vertex AI 지원 형식인 `.txt` 포맷으로 최종 전환 수행
 - **분할 및 적재**: 정제된 전체 텍스트를 각 파트별로 잘라 4개의 파일로 분할한 뒤, Vertex AI Data Store에 적재
 ---
-## Google ADK(Agent Development Kit)
-- LLM 에이전트를 빠르게 구축하기 위한 Google의 공식 프레임워크
+## 3️⃣ Google ADK(Agent Development Kit)
+- LLM 에이전트를 빠르게 구축하기 위한 Google 의 공식 프레임워크
 - 핵심 철학은 `선언적 에이전트 정의`로, Python 코드 몇 줄로 에이전트를 정의하고 즉시 실행할 수 있다.
 - ADK의 `LlmAgent` 클래스는 **model(사용할 LLM)**, **instruction(에이전트 역할/행동 지침)**, **tools(사용 가능한 도구 목록)** 의 3가지 핵심 속성을 가지며, 이 선언만으로 완전한 에이전트가 생성됨 
 - ADK는 LangGraph와 달리 그래프를 직접 구성하지 않고, `sub_agents` 파라미터로 에이전트 간 관계를 선언적으로 정의
-  - 이는 빠른 프로토타입에 유리하지만, LangGraph처럼 세밀한 흐름 제어는 제한적임
-  - ADK 2.0 에서는 그래프 기반 워크플로가 가능해짐 (라우팅 가능)
+  - 이는 빠른 프로토타입에 유리하지만(장점), LangGraph처럼 세밀한 흐름 제어는 제한적임(단점)
 
 ```python
 from google_adk import agent
@@ -50,8 +56,8 @@ weather_bot = agent.LlmAgent(
 )
 ```
 ---
-## VertexAI Search
-#### 웹사이트 데이터와 기타 정형 또는 비정형 데이터가 포함된 애플리케이션에 통합할 수 있는 강력한 `검색 엔진`
+# 4️⃣ VertexAI Search
+### 웹사이트 데이터와 기타 정형 또는 비정형 데이터가 포함된 애플리케이션에 통합할 수 있는 강력한 `검색 엔진`
 <!-- <img src="https://docs.cloud.google.com/generative-ai-app-builder/images/generic-search-overview.svg?hl=ko" width="800" height="600"> -->
 <!-- ![VertexAI Search](https://docs.cloud.google.com/generative-ai-app-builder/images/generic-search-overview.svg?hl=ko) -->
 
@@ -79,8 +85,9 @@ weather_bot = agent.LlmAgent(
   - 형식: 1차원 배열, 차원수 `1~768`
   - 임베딩 키 속성(필드) 최대 2개 태그 가능, **설정 후 삭제 불가**
 
-  ### 앱 / 엔진 (App / Engine)
+<img src="./images/embedding.jpeg" width="700" height="300">
 
+### 앱 / 엔진 (App / Engine)
 - 데이터 스토어에 씌워지는 검색 엔진
 - 하나의 앱(엔진) 에 여러 개의 데이터 스토어를 연결할 수 있음
 - App 의 종류
@@ -88,33 +95,28 @@ weather_bot = agent.LlmAgent(
   - Recommendation (추천): 사용자의 패턴을 학습해 콘텐츠나 상품을 추천
   - Healthcare Search: 의료 데이터(FHIR 등)에 특화된 검색 엔진
 
-
-<img src="./images/embedding.jpeg" width="700" height="300">
-<!-- ![임베딩](./images/embedding.jpeg) -->
-
 ### 하이브리드 검색
-- Vertex AI Search가 **키워드 검색(정확 일치)** 과 **시맨틱 검색(의미/문맥 유사)** 을 함께 수행하고,
-- 각 결과를 **RRF(Reciprocal Rank Fusion)** 로 결합해 최종 랭킹을 결정
-
-### Serving Controls (서빙 컨트롤)
-- 기본 AI 모델 판단에만 맡기지 않고, **특정 조건(Condition)** 에 따라 **동작(Action)** 을 강제해 검색 결과를 가공/제어하는 기능
-
-- 대표 유형
-  - `Boost`: 조건에 맞는 결과를 상단/하단으로 **순위 조정**
-  - `Filter`: 조건에 안 맞는 결과를 **결과에서 제외**
-  - `Synonyms`: 서로 다른 단어를 같은 의미로 묶어 **쿼리 확장**
-  - `Redirect`: 특정 쿼리는 검색 대신 **지정 URL로 이동**
-
-### Search Tuning (검색 모델 튜닝)
-- 쿼리(Query)별로 “정답으로 기대되는 문서 조각”을 학습시켜, 결과의 **우선순위를 재배치**하는 최적화 과정
-- 학습 데이터(요약): `corpus.jsonl`(문서 조각), `queries.jsonl`(질문), `train_labels.tsv`(쿼리-문서 매칭 + `score`: `1` 정답 / `0` 오답)
+- **키워드 검색(정확 일치)** 과 **시맨틱 검색(의미/문맥 유사)** 을 함께 수행하고,
+- 각 결과를 결합해 최종 랭킹을 결정
 ---
-## Agent 아키텍쳐
+## 5️⃣ Agent 아키텍쳐
 ![아키텍쳐](./images/adk.jpeg)
 ---
-## 질답 평가
-https://tripodoffice-my.sharepoint.com/:x:/r/personal/whjeong_didim365_com/Documents/NH_POC_%E1%84%8C%E1%85%B5%E1%86%AF%E1%84%83%E1%85%A1%E1%86%B8_%E1%84%85%E1%85%B5%E1%84%89%E1%85%B3%E1%84%90%E1%85%B3_%E1%84%8E%E1%85%B1%E1%84%92%E1%85%A1%E1%86%B8_ADK.xlsx?d=w32dbde53889e47e89d0f159f034c1dd8&csf=1&web=1&e=S1pdIl
+# 시연
+### 질문 1
+```
+내가 2025년 2월에 신규로 추진한 'NH전세대출' 계좌가 하나 있어. 
+이 계좌의 신규여신평균잔액은 1억 5천만 원이고, 
+손익인정금액은 120만 원이야. 이 건으로 내가 받을 수 있는 점수는 몇 점이지?
+```
+
+### 질문 2
+```
+NICS 4A등급 신용대출 평잔이 472356729원인데 인정금액이 얼마야?
+```
+
+### 질문 3
+```
+집단대출이나 작년 신규분 이월실적은 점수 반영이 어떻게 되나요?
+```
 ---
-## Agent Engine (시간있으면)
-- 랭그 랭체이 -> trace logging 이 제한적  (제생각)
-- 평가

@@ -1,12 +1,9 @@
 from google.adk.agents.llm_agent import LlmAgent
 from google.genai import types
 
-from agents_v1_sequential.callbacks.logging_callbacks import (
-    log_after_agent,
-    log_after_model,
-    log_before_agent,
-    log_before_model,
+from agents_v1_sequential.callbacks.origin_query_callbacks import (
     chain_before_agent,
+    origin_query_save_callback,
 )
 from agents_v1_sequential.callbacks.early_exit_callbacks import (
     skip_conversation_rewrite_if_unneeded,
@@ -59,10 +56,6 @@ conversation_rewrite_agent = LlmAgent(
     output_key="conversation_rewrite",
     tools=[],
     before_agent_callback=chain_before_agent(
-        log_before_agent, skip_conversation_rewrite_if_unneeded
+        origin_query_save_callback, skip_conversation_rewrite_if_unneeded
     ),
-    after_agent_callback=log_after_agent,
-    before_model_callback=log_before_model,
-    after_model_callback=log_after_model,
 )
-

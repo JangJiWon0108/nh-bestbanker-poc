@@ -3,12 +3,6 @@ from pathlib import Path
 from google.adk.agents.llm_agent import LlmAgent
 from google.genai import types
 
-from agents_v1_sequential.callbacks.logging_callbacks import (
-    log_after_agent,
-    log_after_model,
-    log_before_agent,
-    log_before_model,
-)
 from agents_v1_sequential.schemas.category_schema import CategoryClassificationOutput
 from config.properties import Settings
 
@@ -52,8 +46,4 @@ category_classifier_agent = LlmAgent(
     output_schema=CategoryClassificationOutput,
     output_key="category_classification",
     tools=[],
-    before_agent_callback=log_before_agent,
-    after_agent_callback=log_after_agent,
-    before_model_callback=log_before_model,
-    after_model_callback=log_after_model,
 )
