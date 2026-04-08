@@ -11,7 +11,11 @@
 ## 1️⃣ 질답 평가 점수
 https://tripodoffice-my.sharepoint.com/:x:/r/personal/whjeong_didim365_com/Documents/NH_POC_%E1%84%8C%E1%85%B5%E1%86%AF%E1%84%83%E1%85%A1%E1%86%B8_%E1%84%85%E1%85%B5%E1%84%89%E1%85%B3%E1%84%90%E1%85%B3_%E1%84%8E%E1%85%B1%E1%84%92%E1%85%A1%E1%86%B8_ADK.xlsx?d=w32dbde53889e47e89d0f159f034c1dd8&csf=1&web=1&e=S1pdIl
 
-![아키텍쳐](./images/score.jpeg)
+![점수](./images/score.jpeg)
+
+### 틀린 문항
+
+![점수](./images/question_example.jpeg)
 
 ---
 ## 2️⃣ 문서 전처리 
@@ -26,8 +30,8 @@ https://tripodoffice-my.sharepoint.com/:x:/r/personal/whjeong_didim365_com/Docum
 - LLM 에이전트를 빠르게 구축하기 위한 Google 의 공식 프레임워크
 - 핵심 철학은 `선언적 에이전트 정의`로, Python 코드 몇 줄로 에이전트를 정의하고 즉시 실행할 수 있다.
 - ADK의 `LlmAgent` 클래스는 **model(사용할 LLM)**, **instruction(에이전트 역할/행동 지침)**, **tools(사용 가능한 도구 목록)** 의 3가지 핵심 속성을 가지며, 이 선언만으로 완전한 에이전트가 생성됨 
-- ADK는 LangGraph와 달리 그래프를 직접 구성하지 않고, `sub_agents` 파라미터로 에이전트 간 관계를 선언적으로 정의
-  - 이는 빠른 프로토타입에 유리하지만(장점), LangGraph처럼 세밀한 흐름 제어는 제한적임(단점)
+- ADK는 LangGraph와 달리 그래프를 직접 구성하지 않고, 에이전트 간 관계/툴 사용 등을 선언적으로 정의
+  - 이는 빠른 프로토타입에 유리하지만(장점), LangGraph처럼 세밀한 흐름 제어는 제한적(단점)
 
 ```python
 from google_adk import agent
@@ -56,8 +60,9 @@ weather_bot = agent.LlmAgent(
 )
 ```
 ---
-# 4️⃣ VertexAI Search
-### 웹사이트 데이터와 기타 정형 또는 비정형 데이터가 포함된 애플리케이션에 통합할 수 있는 강력한 `검색 엔진`
+## 4️⃣ VertexAI Search
+### google 클라우드의 VertexAI 환경에서 지원하는 강력한 `검색 엔진`
+- Vertex AI : AI 통합 관리 플랫폼으로 모델 학습, 배포, trace, 로깅, 관리, 테스트, 평가 등등을 할 수 있음
 <!-- <img src="https://docs.cloud.google.com/generative-ai-app-builder/images/generic-search-overview.svg?hl=ko" width="800" height="600"> -->
 <!-- ![VertexAI Search](https://docs.cloud.google.com/generative-ai-app-builder/images/generic-search-overview.svg?hl=ko) -->
 
@@ -102,7 +107,7 @@ weather_bot = agent.LlmAgent(
 ## 5️⃣ Agent 아키텍쳐
 ![아키텍쳐](./images/adk.jpeg)
 ---
-# 시연
+## 시연
 ### 질문 1
 ```
 내가 2025년 2월에 신규로 추진한 'NH전세대출' 계좌가 하나 있어. 
