@@ -1,0 +1,11 @@
+.venv
+.git
+**/__pycache__
+*.py[cod]
+*.pyo
+**/.adk
+**/.pytest_cache
+*.xlsx
+*.tsv
+.env
+credentials/*.json

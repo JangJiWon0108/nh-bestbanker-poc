@@ -7,6 +7,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 BASE_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_ENV_FILE = str(BASE_DIR / ".env")
 ENV_FILE = os.getenv("ENV_FILE", DEFAULT_ENV_FILE)
+# Cloud Run 등 컨테이너에 .env 가 없을 때는 파일을 쓰지 않고 OS 환경변수만 사용
+_ENV_FILE_FOR_CONFIG = ENV_FILE if Path(ENV_FILE).is_file() else None
+
 
 class Settings(BaseSettings):
     # Gooogle Gemini
@@ -38,5 +41,8 @@ class Settings(BaseSettings):
     # 로깅
     LOGGING_DETAILS: bool
 
-    # env 경로
-    model_config = SettingsConfigDict(env_file=ENV_FILE, env_file_encoding="utf-8")
+    # env 경로 (.env 가 없으면 OS 환경변수만 사용 — Cloud Run)
+    model_config = SettingsConfigDict(
+        env_file=_ENV_FILE_FOR_CONFIG,
+        env_file_encoding="utf-8",
+    )
